@@ -9,6 +9,8 @@ IAS Sensor for Paraglider
 
 # Source Code
 
+[Code](./src/IAS-Sensor/)
+
 # Source for 3D Printing
 [STL File](./CAD/IAS-Sensor.stl)
 

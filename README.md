@@ -1,11 +1,11 @@
 # IAS-Sensor for Paraglider
 IAS Sensor for Paraglider
 
-[<img src="./images/IAS-Sensor.png">]
+<img src="./images/IAS-Sensor.png">
 
-[<img src="./images/IAS-Sensor_Schaltplan.png">]
+<img src="./images/IAS-Sensor_Schaltplan.png">
 
-[<img src="./images/IAS-Sensor_Steckplatine.png">]
+<img src="./images/IAS-Sensor_Steckplatine.png">
 
 # Source Code
 

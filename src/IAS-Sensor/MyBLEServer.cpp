@@ -21,51 +21,56 @@
 */
 #include <MyBLEServer.h> 
 
-/*
-BLEServer *pServer = NULL;
-BLECharacteristic *pTxCharacteristic;
-bool deviceConnected = false;
-bool oldDeviceConnected = false;
-//uint8_t buffer[] = "$PDGFTL1,2025,2000,250,-14,45,134,28,65,382,153*14\r\n";
-
-//uint8_t buffer[] = "$LXWP0,,30,10,0,,,,,,,,*11\r\n";
-uint8_t buffer[] = "$LXWP0,,31.5,,,,,,,,,,*3A\r\n";
-
-uint8_t txValue = 0;
-*/
-// See the following for generating UUIDs:
-// https://www.uuidgenerator.net/
-
-#define SERVICE_UUID           "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"  // UART service UUID
-#define CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-#define CHARACTERISTIC_UUID_TX "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
-
 class MyServerCallbacks : public BLEServerCallbacks {
+  MyBLEServer *myServer_;
+public:
+    
   void onConnect(BLEServer *pServer) {
-    //deviceConnected = true;
+    myServer_->sendOnConnectMsg_ = true;
   };
 
-  void onDisconnect(BLEServer *pServer) {
-    //deviceConnected = false;
-  }
+  void onDisconnect(BLEServer *pServer) 
+  {}
+  MyServerCallbacks(MyBLEServer *myServer) : myServer_(myServer)
+  {}
+
 };
 
 
 class MyCallbacks : public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *pCharacteristic) {
+    String rxValue = pCharacteristic->getValue();
+
+    if (rxValue.length() > 0) {
+      Serial.println("*********");
+      Serial.print("Received Value: ");
+      for (int i = 0; i < rxValue.length(); i++) {
+        Serial.print(rxValue[i]);
+      }
+
+      Serial.println();
+      Serial.println("*********");
+    }
   }
 };
 
+bool MyBLEServer::sendOnConnectMsg() {
+  boolean rv = sendOnConnectMsg_;
+  sendOnConnectMsg_ = false;
+  if(rv) 
+    delay(2000);
+  return rv;
+}
 
-MyBLEServer* MyBLEServer::create(const char *name) {
+MyBLEServer* MyBLEServer::create(const char *name, const char *onConnectMsg) {
 
-  MyBLEServer *rv = new MyBLEServer();
+  MyBLEServer *rv = new MyBLEServer(onConnectMsg);
   // Create the BLE Device
   BLEDevice::init(name);
 
   // Create the BLE Server
   rv->server_ = BLEDevice::createServer();
-  rv->server_->setCallbacks(new MyServerCallbacks());
+  rv->server_->setCallbacks(new MyServerCallbacks(rv));
 
   // Create the BLE Service
   BLEService *service = rv->server_->createService(SERVICE_UUID);
@@ -87,4 +92,26 @@ MyBLEServer* MyBLEServer::create(const char *name) {
 
   return rv;
 }
-  
+
+bool MyBLEServer::isConnected() 
+{ 
+  return server_ ? 
+    server_->getConnectedCount() > 0 : false; 
+}
+
+void MyBLEServer::send(const char *data) 
+{
+  if (isConnected()) {
+    const char *p = ((sendOnConnectMsg()) ?
+        onConnectMsg_.c_str() : data); 
+    pTxCharacteristic_->setValue((uint8_t *) p, strlen(p));
+    pTxCharacteristic_->notify();
+    Serial.printf("send: %s\r\n", p);
+  }
+}
+
+
+void MyBLEServer::startAdvertising() 
+{  
+  server_->startAdvertising(); 
+}

@@ -27,15 +27,19 @@
 #include <PowerManager.h>
 
 
+#define DEVICE_NAME   "IAS-Sensor"
+#define SV_VERSION    1.0
+#define HV_VERSION    1.0
+
 #define PIN_SDA 32
 #define PIN_SCL 33
 #define PIN_POW 22
-#define PIN_BTN 19
+#define PIN_BTN 34
 
 
 #define calcRho true
 
-#if 1
+#if 0
 #define DBG(x)  x
 #else
 #define DBG(x)  
@@ -49,17 +53,37 @@ KalmanFilter   kfDiffPressure;
 KalmanFilter   kfTemperature;
 
 #define LPWX0_FOTMATER  "$LXWP0,,%.1f,,,,,,,,,,*%02X\n\r"
+#define LPWX1_FOTMATER  "$LXWP1,%s,%d,%.2f,%.2f*%02X\n\r"
 
-const char *getLXWP(double ias) {
-  static char buffer[128];
-  sprintf(buffer, LPWX0_FOTMATER, ias, 0x00);
+
+
+uint8_t calcCheckSum(char *data) {
   uint8_t check = 0;
-  for(int i=1; i < 128 && buffer[i] != '*'; i++) {
-    check^=(uint8_t) buffer[i];
+  for(char* p=(data+1); *p != '\0' && *p != '*'; p++) {
+    check^=(uint8_t) *p;
   }
-  sprintf(buffer, LPWX0_FOTMATER, ias, check);
+  return check;  
+}
+
+const char *getLXWP0(double ias) {
+  static char buffer[129];
+  snprintf(buffer, 128, LPWX0_FOTMATER, ias, 0x00);
+  snprintf(buffer, 128, LPWX0_FOTMATER, ias, calcCheckSum(buffer));
   return buffer;
 }
+
+const char *getLXWP1() {
+  static char buffer[129];
+  uint32_t    serialNumber = 0;
+  for (int i = 0; i < 17; i = i + 8) {
+    serialNumber |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+  }
+
+  snprintf(buffer, 128, LPWX1_FOTMATER, DEVICE_NAME, serialNumber, SV_VERSION, HV_VERSION, 0x00);
+  snprintf(buffer, 128, LPWX1_FOTMATER, DEVICE_NAME, serialNumber, SV_VERSION, HV_VERSION, calcCheckSum(buffer));
+  return buffer;
+}
+
 
 double calcIAS(double dp, double t) {
   double rv;
@@ -68,26 +92,32 @@ double calcIAS(double dp, double t) {
   rv =(dp < 0)? 0 : sqrt(2*dp*100./rho);
   // Recalc m/s -> km/h
   rv *= 3.6; 
+  rv *= 1.5;
   return rv;  
 }
 
 
-void setup() {
-  powerManager = PowerManager::create(PIN_POW, PIN_BTN);
 
-  DBG(Serial.begin(115200);)
+
+void setup() {
+  Serial.begin(115200);
+  powerManager = PowerManager::create(PIN_POW, PIN_BTN);
   // Create the BLE Device
-  pServer = MyBLEServer::create("IAS Sensor");
+  pServer = MyBLEServer::create("IAS Sensor", getLXWP1());
   diffBarometer.begin(PIN_SDA, PIN_SCL);
-  DBG(Serial.println("Waiting a client connection to notify...");)  
+  DBG(Serial.println("Waiting a client connection to notify...");)
+  uint8_t chipid[6];
 }
 
 void loop() {
   powerManager->loop();
-  DBG(Serial.printf("Diff: %08f Temp: %08f IAS: %02f\n", kfDiffPressure.get(), kfTemperature.get(),calcIAS(kfDiffPressure.get(), kfTemperature.get()));)
+  DBG(Serial.printf("Volt: %f Diff: %08f Temp: %08f IAS: %02f\n", powerManager->get(), \
+   kfDiffPressure.get(), kfTemperature.get(),calcIAS(kfDiffPressure.get(), kfTemperature.get()));)
   
-  if (pServer->isConnected()) {
-    pServer->send(getLXWP(calcIAS(kfDiffPressure.get(), kfTemperature.get())));
+  /*if (pServer->isNewDeviceConnected()) {
+    pServer->send(getLXWP1());
+  } else */if (pServer->isConnected()) {
+    pServer->send(getLXWP0(calcIAS(kfDiffPressure.get(), kfTemperature.get())));
   } else {
     pServer->startAdvertising();
   }

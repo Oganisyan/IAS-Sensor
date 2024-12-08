@@ -8,7 +8,7 @@ IAS Sensor for Paraglider
 <img src="./images/IAS-Sensor_Steckplatine.png">
 
 #Mounting on the paraglider
-<img src="./images/mounting_on_the_paraglider">
+<img src="./images/mounting_on_the_paraglider.jpg">
 
 # Source Code
 

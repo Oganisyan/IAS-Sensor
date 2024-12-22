@@ -1,5 +1,5 @@
-// KalmanFilter
-
+#ifndef __KALMAN_FILTER__
+#define __KALMAN_FILTER__
 
 class KalmanFilter{
 private: 
@@ -27,3 +27,5 @@ public:
   void update(double measurement);
   double get();
 };
+
+#endif // __KALMAN_FILTER__

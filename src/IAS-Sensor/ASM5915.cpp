@@ -4,25 +4,26 @@
 
 
 
-ASM5915::ASM5915(TwoWire &wire, int address) : 
-lastInitTime_(0), wire_(wire), address_(address), ready_(false), calibration_(0.0)
+ASM5915::ASM5915(TwoWire &wire) : 
+lastInitTime_(0), wire_(wire), address_(0x28), ready_(false), calibration_(0.0)
 {
 }
 
 
-void ASM5915::begin(int sda , int scl)
+void ASM5915::begin()
 {
-  wire_.begin(sda,scl);
   double calibration = 0.;
   for(int i=0; i < CALIBRATION_COUNT; i++) {
     while(!isReady()){
-      delay(5);
       loop();
-    }
-    calibration += getPressure();
+      delay(10);
+    } 
+    double p = getPressure();
+    calibration += p;
   }
   if(calibration < 0.25 * CALIBRATION_COUNT)
     calibration_ = calibration/CALIBRATION_COUNT;
+  Serial.printf("Calibration p =%f\n",calibration_);
 }
 
 void ASM5915::loop()

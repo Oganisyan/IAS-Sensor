@@ -106,7 +106,6 @@ void MyBLEServer::send(const char *data)
         onConnectMsg_.c_str() : data); 
     pTxCharacteristic_->setValue((uint8_t *) p, strlen(p));
     pTxCharacteristic_->notify();
-    Serial.printf("send: %s\r\n", p);
   }
 }
 

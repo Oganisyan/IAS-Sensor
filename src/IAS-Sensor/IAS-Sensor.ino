@@ -23,6 +23,8 @@
 
 #include <MyBLEServer.h> 
 #include <ASM5915.h>
+#include <MS5611.h>
+#include <MyUtil.h>
 #include <KalmanFilter.h>
 #include <PowerManager.h>
 
@@ -31,44 +33,43 @@
 #define SV_VERSION    1.0
 #define HV_VERSION    1.0
 
-#define PIN_SDA 32
-#define PIN_SCL 33
-#define PIN_POW 22
-#define PIN_BTN 34
+#define LPWX0_FOTMATER  "$LXWP0,,%s,%s,%s,,,,,,,,*%02X\r\n"
+#define LPWX1_FOTMATER  "$LXWP1,%s,%d,%.2f,%.2f*%02X\r\n"
+
+#define PIN_SDA GPIO_NUM_32
+#define PIN_SCL GPIO_NUM_33
+#define PIN_POW GPIO_NUM_19
+#define PIN_BTN GPIO_NUM_34
 
 
-#define calcRho true
-
-#if 0
+#if 1
 #define DBG(x)  x
 #else
 #define DBG(x)  
 #endif
 
-PowerManager *powerManager;
+PowerManager   *powerManager = NULL;
+MyBLEServer    *pServer = NULL;
+ASM5915        diffBarometer(Wire);
+MS5611         barometer(Wire);
+Calculator     calculator;
+KalmanFilter   dKfP;
+KalmanFilter   dKfT;
+KalmanFilter   kfP;
+KalmanFilter   kfT;
 
-MyBLEServer *pServer = NULL;
-ASM5915     diffBarometer(Wire, 0x28);
-KalmanFilter   kfDiffPressure;
-KalmanFilter   kfTemperature;
-
-#define LPWX0_FOTMATER  "$LXWP0,,%.1f,,,,,,,,,,*%02X\n\r"
-#define LPWX1_FOTMATER  "$LXWP1,%s,%d,%.2f,%.2f*%02X\n\r"
-
-
-
-uint8_t calcCheckSum(char *data) {
-  uint8_t check = 0;
-  for(char* p=(data+1); *p != '\0' && *p != '*'; p++) {
-    check^=(uint8_t) *p;
-  }
-  return check;  
+String d2s(double d) {
+  return isnan(d) ? String() : String(d,1);
 }
 
-const char *getLXWP0(double ias) {
+const char *getLXWP0(double p, double ias) {
   static char buffer[129];
-  snprintf(buffer, 128, LPWX0_FOTMATER, ias, 0x00);
-  snprintf(buffer, 128, LPWX0_FOTMATER, ias, calcCheckSum(buffer));
+  double alt;
+  double vario;
+  calculator.calc(p, alt, vario);
+  snprintf(buffer, 128, LPWX0_FOTMATER, d2s(ias).c_str(), d2s(alt).c_str(), d2s(vario).c_str(), 0x00);
+  snprintf(buffer, 128, LPWX0_FOTMATER, d2s(ias).c_str(), d2s(alt).c_str(), d2s(vario).c_str(), calcCheckSum(buffer));
+  DBG(Serial.print(buffer));
   return buffer;
 }
 
@@ -78,56 +79,43 @@ const char *getLXWP1() {
   for (int i = 0; i < 17; i = i + 8) {
     serialNumber |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
   }
-
   snprintf(buffer, 128, LPWX1_FOTMATER, DEVICE_NAME, serialNumber, SV_VERSION, HV_VERSION, 0x00);
   snprintf(buffer, 128, LPWX1_FOTMATER, DEVICE_NAME, serialNumber, SV_VERSION, HV_VERSION, calcCheckSum(buffer));
+  DBG(Serial.print(buffer));
   return buffer;
 }
-
-
-double calcIAS(double dp, double t) {
-  double rv;
-
-  double rho = calcRho ? 1013.25/(t+273.15)*0.348564471 : 1.225;  
-  rv =(dp < 0)? 0 : sqrt(2*dp*100./rho);
-  // Recalc m/s -> km/h
-  rv *= 3.6; 
-  rv *= 1.5;
-  return rv;  
-}
-
-
-
 
 void setup() {
   Serial.begin(115200);
   powerManager = PowerManager::create(PIN_POW, PIN_BTN);
   // Create the BLE Device
   pServer = MyBLEServer::create("IAS Sensor", getLXWP1());
-  diffBarometer.begin(PIN_SDA, PIN_SCL);
+  Wire.begin(PIN_SDA, PIN_SCL);
+  diffBarometer.begin();
+  barometer.begin();
   DBG(Serial.println("Waiting a client connection to notify...");)
   uint8_t chipid[6];
 }
 
 void loop() {
-  powerManager->loop();
-  DBG(Serial.printf("Volt: %f Diff: %08f Temp: %08f IAS: %02f\n", powerManager->get(), \
-   kfDiffPressure.get(), kfTemperature.get(),calcIAS(kfDiffPressure.get(), kfTemperature.get()));)
-  
-  /*if (pServer->isNewDeviceConnected()) {
-    pServer->send(getLXWP1());
-  } else */if (pServer->isConnected()) {
-    pServer->send(getLXWP0(calcIAS(kfDiffPressure.get(), kfTemperature.get())));
+  powerManager->loop();  
+  for(int i=0; i < 25; i++) {
+    diffBarometer.loop();
+    if(diffBarometer.isReady()) {
+      dKfP.update(diffBarometer.getPressure());
+      dKfT.update(diffBarometer.getTemperature());
+    } 
+    barometer.loop();
+    if(barometer.isReady()) {
+      kfP.update(barometer.getPressure());
+      kfT.update(barometer.getTemperature());
+    } 
+    delay(10);
+  }
+  if (pServer->isConnected()) {
+    pServer->send(getLXWP0(kfP.get(), calcIAS(dKfP.get(), dKfT.get())));
   } else {
     pServer->startAdvertising();
   }
-  for(int i=0; i < 50; i++) {
-    diffBarometer.loop();
-    if(diffBarometer.isReady()) {
-      kfDiffPressure.update(diffBarometer.getPressure());
-      kfTemperature.update(diffBarometer.getTemperature());
-    } 
 
-    delay(10);
-  }
 }

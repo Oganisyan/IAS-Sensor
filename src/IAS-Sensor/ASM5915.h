@@ -17,10 +17,10 @@ class ASM5915
     
         
   public:
-    ASM5915(TwoWire &wire, int address);
+    ASM5915(TwoWire &wire);
     double getTemperature();
     double getPressure();
-    void begin(int sda = 32, int scl = 33);
+    void begin();
     void loop();
     boolean isReady();
 

@@ -5,18 +5,18 @@
 
 
 class PowerManager {
-  uint8_t pow_;     // Power LED
-  uint8_t btn_;     // switch button
-  uint8_t pin_;     // BAT_ADC
+  gpio_num_t pow_;     // Power LED
+  gpio_num_t btn_;     // switch button
+  gpio_num_t pin_;     // BAT_ADC
   int vref_;
   
-  PowerManager(int pow, int btn);
+  PowerManager(gpio_num_t pow, gpio_num_t btn);
   void init();
   void shutdown();
 
 
 public:
-  static PowerManager *create(int pow, int btn);
+  static PowerManager *create(gpio_num_t pow, gpio_num_t btn);
   double  get();
   void   loop();
 };

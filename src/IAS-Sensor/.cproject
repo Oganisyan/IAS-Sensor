@@ -16,7 +16,7 @@
 					<folderInfo id="io.sloeber.core.sketch.0." name="/" resourcePath="">
 						<toolChain id="io.sloeber.core.toolChain.release.141604492" name="Arduino Toolchain (Sloeber edition)" superClass="io.sloeber.core.toolChain.release">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="io.sloeber.targetplatform.1913965121" name="Arduino Target" osList="all" superClass="io.sloeber.targetplatform"/>
-							<builder buildPath="${workspace_loc:/IAS_Sensor}/Release" id="io.sloeber.sketch.builder.1893516434" keepEnvironmentInBuildfile="false" name="Arduino sketch builder" parallelBuildOn="false" superClass="io.sloeber.sketch.builder"/>
+							<builder buildPath="${workspace_loc:/IAS_Sensor}/Release" id="io.sloeber.sketch.builder.1893516434" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" name="Arduino sketch builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="io.sloeber.sketch.builder"/>
 							<tool id="io.sloeber.tool.sketch.compiler.cpp.946449513" name="Arduino C++ Compiler" superClass="io.sloeber.tool.sketch.compiler.cpp">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.cpp.sketch.option.incpath.652590269" name="Include Paths (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/IAS_Sensor/core/core}&quot;"/>

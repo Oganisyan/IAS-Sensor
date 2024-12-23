@@ -12,7 +12,7 @@ class ASM5915
     double temperature_;
     double pressure_;
     double calibration_;
-    unsigned long  lastInitTime_;
+	unsigned long lastInitTime_;
     boolean ready_;
     
         

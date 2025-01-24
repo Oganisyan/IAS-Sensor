@@ -38,9 +38,10 @@
 #define PIN_SDA GPIO_NUM_32
 #define PIN_SCL GPIO_NUM_33
 #define PIN_POW GPIO_NUM_19
-#define PIN_BTN GPIO_NUM_34
+#define PIN_BTN GPIO_NUM_34 // 35
+#define PIN_ADC GPIO_NUM_36
 
-#if 1
+#if 0
 #define DBG(x)  x
 #else
 #define DBG(x)  
@@ -89,7 +90,7 @@ const char* getLXWP1() {
 
 void setup() {
 	Serial.begin(115200);
-	powerManager = PowerManager::create(PIN_POW, PIN_BTN);
+	powerManager = PowerManager::create(PIN_POW, PIN_BTN, PIN_ADC);
 	// Create the BLE Device
 	pServer = MyBLEServer::create("IAS Sensor", getLXWP1());
 	Wire.begin(PIN_SDA, PIN_SCL);

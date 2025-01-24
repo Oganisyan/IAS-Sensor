@@ -3,16 +3,16 @@
 RTC_DATA_ATTR boolean switchOnOff = true;
 RTC_DATA_ATTR int lastBtnState = LOW;
 
-#define BAT_ADC GPIO_NUM_36
+
 const double NaN = std::numeric_limits<double>::quiet_NaN();
 
-PowerManager::PowerManager(gpio_num_t pow, gpio_num_t btn) :
-		pow_(pow), btn_(btn), pin_(BAT_ADC), vref_(1100) {
+PowerManager::PowerManager(gpio_num_t pow, gpio_num_t btn, gpio_num_t adc) :
+		pow_(pow), btn_(btn), adc_(adc), vref_(1100) {
 	init();
 }
 
-PowerManager* PowerManager::create(gpio_num_t pow, gpio_num_t btn) {
-	return new PowerManager(pow, btn);
+PowerManager* PowerManager::create(gpio_num_t pow, gpio_num_t btn, gpio_num_t adc) {
+	return new PowerManager(pow, btn, adc);
 }
 
 void PowerManager::init() {
@@ -40,7 +40,7 @@ void PowerManager::shutdown() {
 
 double PowerManager::get() {
 	//return NaN;
-	int ADC_VALUE = analogRead(pin_);
+	int ADC_VALUE = analogRead(adc_);
 	int adc_percentage = int(100 * ADC_VALUE / 4095);
 	return (ADC_VALUE * 3.3) / (4095);
 }

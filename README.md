@@ -3,6 +3,8 @@ IAS Sensor for Paraglider
 
 <img src="./images/IAS-Sensor.png">
 
+<img src="./images/IAS-Sensor_pcb.png">
+
 <img src="./images/IAS-Sensor_Schaltplan.png">
 
 <img src="./images/IAS-Sensor_Steckplatine.png">

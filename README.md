@@ -40,7 +40,7 @@ Let me know if you need further adjustments!
 | C 100 nF                           |       1  |     0,02 €   |  www.reichelt.de                        |
 | Shipping (reichelt)                |       1  |     5,95 €   |  www.reichelt.de                        |
 | MS5611                             |       1  |     8,37 €   |  E-Bay                                  |
-| IMS 5915                           |       1  |    27,50 €   |  www.analog-micro.com                   |
+| AMS 5915 0005D                     |       1  |    27,50 €   |  www.analog-micro.com                   |
 | Lolin32 Lite                       |       1  |     5,91 €   |  E-Bay                                  |
 | Lipo 1000mA                        |       1  |     6,58 €   |  E-Bay                                  |
 | Pitot with 3 Outputs               |       1  |    30,00 €   |  or self-build (show build instructons) |

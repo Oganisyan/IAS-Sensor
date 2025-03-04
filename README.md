@@ -18,10 +18,13 @@ IAS Sensor for Paraglider
 
 [Code](./src/IAS-Sensor/)
 
-# Source for 3D Printing
+# Source for 3D Printing & PCB
 [STL File](./CAD/IAS-SensorV3.stl)
 
 [Tinkercad Repository](https://www.tinkercad.com/things/6USzTzKrwmQ-IAS-SensorV3)
+
+[PCB Fritzing File](./board/IAS-Sensor3.fzz)
+[PCB Fabricate](https://aisler.net/martino/projects/IAS-Sensor3)
 
 Amazingly, SeeYou works just as well with an external sensor as the Bräuniger Compeo+. I read barometric data about 12 times per second to smooth it, but I only send it twice per second.
 Here’s a video: Unfortunately, the Omni screen is too bright, but the phone and the Compeo+ can be compared well. I also find the acoustics quite good.

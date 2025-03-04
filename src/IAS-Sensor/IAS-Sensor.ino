@@ -38,11 +38,13 @@
 #define PIN_SDA GPIO_NUM_32
 #define PIN_SCL GPIO_NUM_33
 #define PIN_POW GPIO_NUM_22  // SENSOR POWER
-#define PIN_BTN GPIO_NUM_19  // POW BUTTON
-#define PIN_BT2 GPIO_NUM_34  // BUTTON_2 NOT USED
+#define PIN_BTN GPIO_NUM_34  // POW BUTTON
+#define PIN_BT2 GPIO_NUM_19  // BUTTON_2 NOT USED
 #define PIN_ADC GPIO_NUM_36  // BATARY VOLTAGE /2
 
-#if 1
+#define LOW_BATARY_VOLTAGE	3.5
+
+#if 0
 #define DBG(x)  x
 #else
 #define DBG(x)  
@@ -101,6 +103,10 @@ void setup() {
 }
 
 void loop() {
+    double voltage = powerManager->get();
+    if(voltage < LOW_BATARY_VOLTAGE) {
+    	powerManager->lowPower();
+    }
 	powerManager->loop();
 	for (int i = 0; i < 25; i++) {
 		diffBarometer.loop();
@@ -117,6 +123,7 @@ void loop() {
 	}
 	if (pServer->isConnected()) {
 		pServer->send(getLXWP0(kfP.get(), calcIAS(dKfP.get(), dKfT.get())));
+        pServer->sendBatteryLevel(voltage);
 	} else {
 		DBG(Serial.println("startAdvertising");)
 		pServer->startAdvertising();

@@ -36,7 +36,7 @@ public:
 	bool isConnected();
 	void send(const char *data);
 	void startAdvertising();
-	void loop();
+	void sendBatteryLevel(double voltage);
 
 	friend class MyServerCallbacks;
 };

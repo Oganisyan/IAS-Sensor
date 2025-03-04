@@ -16,6 +16,7 @@ public:
 	static PowerManager* create(gpio_num_t pow, gpio_num_t btn, gpio_num_t adc);
 	double get();
 	void loop();
+	void lowPower();
 };
 
 #endif //_POWER_MANAGER_H_

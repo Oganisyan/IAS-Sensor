@@ -47,16 +47,10 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 		String rxValue = pCharacteristic->getValue();
 
 		if (rxValue.length() > 0) {
-			Serial.println("*********");
-			Serial.print("Received Value: ");
 			for (int i = 0; i < rxValue.length(); i++) {
 				Serial.print(rxValue[i]);
 			}
 
-			Serial.println();
-			Serial.println("*********");
-		} else {
-			Serial.println("*********");
 		}
 	}
 };
@@ -84,7 +78,7 @@ MyBLEServer* MyBLEServer::create(const char *name, const char *onConnectMsg) {
 	batteryService->addCharacteristic(&BatteryLevelCharacteristic);
 	BatteryLevelDescriptor.setValue("Percentage 0 - 100");
 	BatteryLevelCharacteristic.addDescriptor(&BatteryLevelDescriptor);
-	BatteryLevelCharacteristic.addDescriptor(new BLE2902());
+	//BatteryLevelCharacteristic.addDescriptor(new BLE2902());
 
 	rv->server_->getAdvertising()->addServiceUUID(BatteryService);
 	batteryService->start();
@@ -125,12 +119,29 @@ void MyBLEServer::send(const char *data) {
 }
 
 void MyBLEServer::startAdvertising() {
-	loop();
+	//loop();
 	server_->startAdvertising();
 }
 
-void MyBLEServer::loop() {
-	uint8_t level = 57;
-	BatteryLevelCharacteristic.setValue(&level, 1);
+void MyBLEServer::sendBatteryLevel(double voltage) {
+	static long nextUpdateTime = millis();
+	if(nextUpdateTime > millis()) {
+		return;
+	}
+
+	nextUpdateTime = millis() + 5000L;
+	uint8_t data =  voltage > 4.15 ? 0x64 :
+					voltage > 3.85 ? 0x5A :
+					voltage > 3.82 ? 0x50 :
+					voltage > 3.67 ? 0x46 :
+					voltage > 3.65 ? 0x3C :
+					voltage > 3.64 ? 0x32 :
+					voltage > 3.61 ? 0x28 :
+					voltage > 3.55 ? 0x1E :
+					voltage > 3.50 ? 0x14 :
+					voltage > 3.40 ? 0x0A :
+									 0x00 ;
+	printf("Battery Level: %d %% <-> Voltage: %f\n", (int) data, voltage);
+	BatteryLevelCharacteristic.setValue(&data, 1);
 	BatteryLevelCharacteristic.notify();
 }

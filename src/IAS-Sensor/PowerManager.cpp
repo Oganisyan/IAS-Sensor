@@ -16,6 +16,7 @@ PowerManager* PowerManager::create(gpio_num_t pow, gpio_num_t btn, gpio_num_t ad
 }
 
 void PowerManager::init() {
+	pinMode(adc_, INPUT);
 	pinMode(btn_, INPUT);
 	loop();
 	pinMode(pow_, OUTPUT);
@@ -32,15 +33,26 @@ void PowerManager::loop() {
 		shutdown();
 }
 
+void PowerManager::lowPower() {
+	pinMode(pow_, OUTPUT);
+	for(int i=0; i < 10; i++) {
+		digitalWrite(pow_, LOW);
+		delay(100);
+		digitalWrite(pow_, HIGH);
+		delay(100);
+	}
+	shutdown();
+}
+
 void PowerManager::shutdown() {
+	//pinMode(pow_, OUTPUT);
+	//gpio_hold_en(pow_);
+	//digitalWrite(pow_, LOW);
 	esp_sleep_enable_ext0_wakeup(btn_, ESP_EXT1_WAKEUP_ANY_HIGH);
 	esp_deep_sleep_start();
-
 }
 
 double PowerManager::get() {
-	//return NaN;
-	int ADC_VALUE = analogRead(adc_);
-	int adc_percentage = int(100 * ADC_VALUE / 4095);
-	return (ADC_VALUE * 3.3) / (4095);
+	double rv =(analogRead(adc_) * 3.3) / (4095) *2;
+	return rv;
 }

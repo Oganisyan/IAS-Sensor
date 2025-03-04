@@ -19,9 +19,11 @@ IAS Sensor for Paraglider
 [Code](./src/IAS-Sensor/)
 
 # Source for 3D Printing & PCB
+## Case
 [STL File](./CAD/IAS-SensorV3.stl)
 
 [Tinkercad Repository](https://www.tinkercad.com/things/6USzTzKrwmQ-IAS-SensorV3)
+## PCB
 
 [PCB Fritzing File](./board/IAS-Sensor3.fzz)
 
